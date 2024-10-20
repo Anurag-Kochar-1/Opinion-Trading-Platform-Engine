@@ -1,6 +1,9 @@
 import express, { Response } from "express";
+
 import cors from "cors";
+import { createClient } from "redis";
 import dotenv from "dotenv";
+import { logger } from "./utils";
 dotenv.config();
 
 const app = express();
@@ -16,3 +19,29 @@ app.get("/", (_, res: Response) => {
 app.listen(port, () => {
   console.log(`The server is running at http://localhost:${port}`);
 });
+
+async function main() {
+  const creds = {
+    url: process.env.REDIS_URL,
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+  };
+  if (!creds.url || !creds.username || !creds.password) {
+    throw new Error(
+      "Missing Redis credentials: Ensure URL, username, and password are defined"
+    );
+  }
+  const redisClient = createClient(creds);
+  await redisClient.connect();
+  logger(`connected to redis - ${creds.url}`);
+
+  while (true) {
+    const response = await redisClient.rPop("messages" as string);
+    if (!response) {
+    } else {
+      logger(response);
+    }
+  }
+}
+
+main();
