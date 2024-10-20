@@ -4,6 +4,7 @@ import cors from "cors";
 import { createClient } from "redis";
 import dotenv from "dotenv";
 import { logger } from "./utils";
+import { Engine } from "./trade/engine";
 dotenv.config();
 
 const app = express();
@@ -31,6 +32,7 @@ async function main() {
       "Missing Redis credentials: Ensure URL, username, and password are defined"
     );
   }
+  const engine = new Engine();
   const redisClient = createClient(creds);
   await redisClient.connect();
   logger(`connected to redis - ${creds.url}`);
@@ -39,7 +41,7 @@ async function main() {
     const response = await redisClient.rPop("messages" as string);
     if (!response) {
     } else {
-      logger(response);
+      engine.process(JSON.parse(response));
     }
   }
 }
