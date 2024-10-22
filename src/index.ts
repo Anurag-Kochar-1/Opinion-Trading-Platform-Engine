@@ -1,10 +1,10 @@
 import express, { Response } from "express";
-
 import cors from "cors";
 import { createClient } from "redis";
 import dotenv from "dotenv";
 import { logger } from "./utils";
 import { Engine } from "./trade/engine";
+
 dotenv.config();
 
 const app = express();
@@ -33,6 +33,8 @@ async function main() {
     );
   }
   const engine = new Engine();
+  engine.startSnapshots(0.5);
+
   const redisClient = createClient(creds);
   await redisClient.connect();
   logger(`connected to redis - ${creds.url}`);
@@ -46,4 +48,14 @@ async function main() {
   }
 }
 
-main();
+main().catch((error) => {
+  logger(`Fatal error: ${error.message}`);
+  process.exit(1);
+});
+
+process.on('SIGINT', async () => {
+  logger('Taking final snapshot before shutdown...');
+  Engine.getInstance().snapshotManager.takeSnapshot();
+  Engine.getInstance().stopSnapshots();
+  process.exit(0);
+});

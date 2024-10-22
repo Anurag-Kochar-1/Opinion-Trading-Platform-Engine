@@ -1,4 +1,5 @@
 import { RedisManager } from "../lib/redis-manager";
+import { SnapshotManager } from "../managers/snapshot";
 import {
   INRBalances,
   StockBalances,
@@ -12,9 +13,49 @@ import {
 import { logger } from "../utils";
 
 export class Engine {
+  private static instance: Engine;
   private ORDERBOOK: Record<string, Orderbook_2> = {};
   private INR_BALANCES: INRBalances = {};
   private STOCK_BALANCES: StockBalances = {};
+  public snapshotManager: SnapshotManager;
+
+  constructor() {
+    this.snapshotManager = new SnapshotManager(this);
+  }
+
+  public static getInstance() {
+    if (!this.instance) {
+      this.instance = new Engine();
+    }
+    return this.instance;
+  }
+
+  public getSnapshotData() {
+    return {
+      orderbook: this.ORDERBOOK,
+      stockBalances: this.STOCK_BALANCES,
+      inrBalances: this.INR_BALANCES
+    };
+  }
+
+  public restoreFromSnapshot(data: {
+    orderbook: Record<string, Orderbook_2>;
+    stockBalances: StockBalances;
+    inrBalances: INRBalances;
+  }) {
+    this.ORDERBOOK = data.orderbook;
+    this.STOCK_BALANCES = data.stockBalances;
+    this.INR_BALANCES = data.inrBalances;
+  }
+
+  public startSnapshots(intervalMinutes: number = 10) {
+    this.snapshotManager.startSnapshots(intervalMinutes);
+  }
+
+  public stopSnapshots() {
+    this.snapshotManager.stopSnapshots();
+  }
+
 
   process({
     clientId,
@@ -64,6 +105,14 @@ export class Engine {
         break;
       case MESSAGE_TYPE.RESET_STATES:
         response = this.resetStates();
+        break;
+      case MESSAGE_TYPE.CRASH_SERVER:
+        console.log("🔥🔥🔥🔥🔥 CRASHING 🔥🔥🔥🔥🔥")
+        process.exit(1)
+      case MESSAGE_TYPE.RESTORE_SERVER_STATE:
+        console.log("💉 Restoring Sever States")
+        const restoredData = this.snapshotManager.loadLatestSnapshot();
+        console.log(restoredData)
         break;
 
       default:

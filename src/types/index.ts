@@ -73,6 +73,8 @@ export enum MESSAGE_TYPE {
   GET_USER_BALANCE = "GET_USER_BALANCE",
   ONRAMP_USER_BALANCE = "ONRAMP_USER_BALANCE",
   RESET_STATES = "RESET_STATES",
+  CRASH_SERVER = "CRASH_SERVER",
+  RESTORE_SERVER_STATE = "RESTORE_SERVER_STATE",
 }
 export enum STOCK_TYPE {
   YES = "yes",
@@ -118,4 +120,10 @@ export type MessageFromApi =
   } | {
     type: MESSAGE_TYPE.BUY_ORDER | MESSAGE_TYPE.SELL_ORDER,
     data: { userId: string, stockSymbol: string, quantity: number, price: number, stockType: STOCK_TYPE }
+  } | {
+    type: MESSAGE_TYPE.CRASH_SERVER,
+    data: {}
+  } | {
+    type: MESSAGE_TYPE.RESTORE_SERVER_STATE,
+    data: {}
   }; 
