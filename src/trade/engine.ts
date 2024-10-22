@@ -1,17 +1,18 @@
 import { RedisManager } from "../lib/redis-manager";
 import {
   INRBalances,
-  OrderBook,
   StockBalances,
   Response,
   STATUS_TYPE,
   MessageFromApi,
   MESSAGE_TYPE,
+  STOCK_TYPE,
+  Orderbook_2,
 } from "../types";
 import { logger } from "../utils";
 
 export class Engine {
-  private ORDERBOOK: OrderBook = {};
+  private ORDERBOOK: Record<string, Orderbook_2> = {};
   private INR_BALANCES: INRBalances = {};
   private STOCK_BALANCES: StockBalances = {};
 
@@ -37,6 +38,9 @@ export class Engine {
       case MESSAGE_TYPE.GET_ORDERBOOK_BY_STOCK_SYMBOL:
         response = this.viewOrderbookBySymbol({ stockSymbol: message?.data?.stockSymbol });
         break;
+      case MESSAGE_TYPE.MINT_TOKENS:
+        response = this.mintTokens({ stockSymbol: message?.data?.stockSymbol, quantity: message?.data?.quantity, userId: message?.data?.userId });
+        break;
       case MESSAGE_TYPE.GET_INR_BALANCES:
         response = this.getInrBalances();
         break;
@@ -51,6 +55,12 @@ export class Engine {
         break;
       case MESSAGE_TYPE.ONRAMP_USER_BALANCE:
         response = this.onrampInr({ userId: message?.data?.userId, amount: message?.data?.amount });
+        break;
+      case MESSAGE_TYPE.BUY_ORDER:
+        response = this.buy({ userId: message?.data?.userId, price: message?.data?.price, quantity: message?.data?.quantity, stockSymbol: message?.data?.stockSymbol, stockType: message?.data?.stockType });
+        break;
+      case MESSAGE_TYPE.SELL_ORDER:
+        response = this.sell({ userId: message?.data?.userId, price: message?.data?.price, quantity: message?.data?.quantity, stockSymbol: message?.data?.stockSymbol, stockType: message?.data?.stockType });
         break;
       case MESSAGE_TYPE.RESET_STATES:
         response = this.resetStates();
@@ -67,13 +77,12 @@ export class Engine {
       },
     });
 
-    RedisManager.getInstance().publishMessage(
-      `orderbook.${message?.type}`,
-      {
-        message: JSON.stringify(response),
-      }
-    );
-
+    // RedisManager.getInstance().publishMessage(
+    //   `orderbook.${message?.type}`,
+    //   {
+    //     message: JSON.stringify(response),
+    //   }
+    // );
   }
 
   createUser({ userId }: { userId: string }): Response {
@@ -108,11 +117,41 @@ export class Engine {
 
   viewOrderbook(): Response {
     return {
-      statusMessage: "Here is the orderbook",
+      statusMessage: "",
       statusType: STATUS_TYPE.SUCCESS,
       statusCode: 200,
       data: this.ORDERBOOK
     }
+  }
+
+  mintTokens({ userId, stockSymbol, quantity }: { userId: string, stockSymbol: string, quantity: number }): Response {
+    if (!this.STOCK_BALANCES[userId]) {
+      this.STOCK_BALANCES[userId] = {};
+    }
+
+    if (!this.STOCK_BALANCES[userId][stockSymbol]) {
+      this.STOCK_BALANCES[userId][stockSymbol] = {
+        yes: {
+          quantity: 0,
+          locked: 0,
+        },
+        no: {
+          quantity: 0,
+          locked: 0,
+        },
+      };
+    }
+
+    if (!this.STOCK_BALANCES[userId][stockSymbol].yes || !this.STOCK_BALANCES[userId][stockSymbol].no) {
+      this.STOCK_BALANCES[userId][stockSymbol].yes = { quantity: 0, locked: 0 };
+      this.STOCK_BALANCES[userId][stockSymbol].no = { quantity: 0, locked: 0 };
+    }
+
+    this.STOCK_BALANCES[userId][stockSymbol].yes.quantity += quantity;
+    this.STOCK_BALANCES[userId][stockSymbol].no.quantity += quantity;
+
+    return { statusType: STATUS_TYPE.SUCCESS, data: this.STOCK_BALANCES[userId][stockSymbol], statusCode: 200, statusMessage: "Minted Successfully" };
+
   }
 
   viewOrderbookBySymbol({ stockSymbol }: { stockSymbol: string }): Response {
@@ -208,4 +247,531 @@ export class Engine {
       statusType: STATUS_TYPE.SUCCESS,
     }
   }
+
+
+
+  buy({ userId, stockSymbol, quantity, price, stockType }: { userId: string, stockSymbol: string, quantity: number, price: number, stockType: STOCK_TYPE }): Response {
+    if (stockType === STOCK_TYPE.YES) {
+      return this.buyYes({ price, quantity, stockSymbol, userId })
+    } else if (stockType === STOCK_TYPE.NO) {
+      return this.buyNo({ price, quantity, stockSymbol, userId })
+    }
+    return {
+      statusCode: 400,
+      statusMessage: "Something Went Wrong!",
+      statusType: STATUS_TYPE.ERROR,
+    }
+  }
+
+
+
+  buyYes({ userId, stockSymbol, price, quantity }: {
+    userId: string,
+    stockSymbol: string,
+    quantity: number,
+    price: number
+  }
+  ): Response {
+    // 🍎 TODO: add validation here also
+    if (!this.INR_BALANCES[userId]) {
+      this.INR_BALANCES[userId] = { balance: 0, locked: 0 }
+    }
+
+    this.INR_BALANCES[userId].balance -= quantity * price * 100;
+    this.INR_BALANCES[userId].locked += quantity * price * 100;
+
+    if (!this.ORDERBOOK[stockSymbol]) {
+      return { statusMessage: `${stockSymbol} Stock Not Found`, statusCode: 404, statusType: STATUS_TYPE.ERROR };
+    }
+
+    let availableQuantity = 0;
+    let availableNoQuantity = 0;
+
+    if (this.ORDERBOOK[stockSymbol].yes[price]) {
+      availableQuantity = this.ORDERBOOK[stockSymbol].yes[price].total;
+      logger(`availableQuantity - ${availableQuantity} `)
+      logger(`availableNoQuantity - ${availableNoQuantity} `)
+      availableNoQuantity = this.ORDERBOOK[stockSymbol].no[10 - price]?.total || 0;
+    }
+
+    let OUR_QUANTITY = quantity;
+
+    if (availableQuantity > 0) {
+      for (let user in this.ORDERBOOK[stockSymbol].yes[price].orders) {
+        if (OUR_QUANTITY <= 0) break;
+
+        const available = this.ORDERBOOK[stockSymbol].yes[price].orders[user].quantity;
+        const toTake = Math.min(available, OUR_QUANTITY);
+
+        this.ORDERBOOK[stockSymbol].yes[price].orders[user].quantity -= toTake;
+        this.ORDERBOOK[stockSymbol].yes[price].total -= toTake;
+        OUR_QUANTITY -= toTake;
+
+        if (this.ORDERBOOK[stockSymbol].yes[price].orders[user].type == "sell") {
+          if (this.STOCK_BALANCES[user][stockSymbol].yes) {
+            this.STOCK_BALANCES[user][stockSymbol].yes.locked -= toTake;
+            this.INR_BALANCES[user].balance += toTake * price * 100;
+          }
+        } else if (
+          this.ORDERBOOK[stockSymbol].yes[price].orders[user].type == "system_generated"
+        ) {
+          if (this.STOCK_BALANCES[user][stockSymbol].no) {
+            this.STOCK_BALANCES[user][stockSymbol].no.quantity += toTake;
+            this.INR_BALANCES[user].locked -= toTake * price * 100;
+          }
+        }
+
+        if (this.ORDERBOOK[stockSymbol].yes[price].orders[user].quantity === 0) {
+          delete this.ORDERBOOK[stockSymbol].yes[price].orders[user];
+        }
+      }
+
+      if (this.ORDERBOOK[stockSymbol].yes[price].total === 0) {
+        delete this.ORDERBOOK[stockSymbol].yes[price];
+      }
+    }
+
+    if (availableNoQuantity > 0 && this.ORDERBOOK[stockSymbol].no[10 - price]) {
+      for (let user in this.ORDERBOOK[stockSymbol].no[10 - price].orders) {
+        if (OUR_QUANTITY <= 0) break;
+
+        const available =
+          this.ORDERBOOK[stockSymbol].no[10 - price].orders[user].quantity;
+        const toTake = Math.min(available, OUR_QUANTITY);
+
+        this.ORDERBOOK[stockSymbol].no[10 - price].orders[user].quantity -= toTake;
+        this.ORDERBOOK[stockSymbol].no[10 - price].total -= toTake;
+        OUR_QUANTITY -= toTake;
+
+        if (this.ORDERBOOK[stockSymbol].no[10 - price].orders[user].type == "sell") {
+          if (this.STOCK_BALANCES[user][stockSymbol].no) {
+            this.STOCK_BALANCES[user][stockSymbol].no.locked -= toTake;
+            this.INR_BALANCES[user].balance += toTake * (10 - price) * 100;
+          }
+        } else if (
+          this.ORDERBOOK[stockSymbol].no[10 - price].orders[user].type == "system_generated"
+        ) {
+          if (this.STOCK_BALANCES[user][stockSymbol].yes) {
+            this.STOCK_BALANCES[user][stockSymbol].yes.quantity += toTake;
+            this.INR_BALANCES[user].locked -= toTake * (10 - price) * 100;
+          }
+        }
+
+        if (this.ORDERBOOK[stockSymbol].no[10 - price].orders[user].quantity === 0) {
+          delete this.ORDERBOOK[stockSymbol].no[10 - price].orders[user];
+        }
+      }
+
+      if (this.ORDERBOOK[stockSymbol].no[10 - price].total === 0) {
+        delete this.ORDERBOOK[stockSymbol].no[10 - price];
+      }
+    }
+
+    if (OUR_QUANTITY > 0) {
+      this.mintOppositeStocks({ stockSymbol, price, quantity: OUR_QUANTITY, userId, orderType: STOCK_TYPE.YES });
+    }
+
+    this.initializeStockBalance({ userId, stockSymbol });
+
+    if (this.STOCK_BALANCES[userId][stockSymbol]?.yes) {
+      this.STOCK_BALANCES[userId][stockSymbol].yes.quantity += quantity - OUR_QUANTITY;
+    }
+
+    this.INR_BALANCES[userId].locked -= (quantity - OUR_QUANTITY) * price * 100;
+
+    return {
+      statusMessage: `Buy order for 'yes' has been added for ${stockSymbol} stock`,
+      statusCode: 200,
+      statusType: STATUS_TYPE.SUCCESS,
+      data: {
+        orderbook: this.ORDERBOOK[stockSymbol],
+
+      }
+    };
+
+  };
+
+  mintOppositeStocks({ stockSymbol, price, quantity, userId, orderType }: { stockSymbol: string, price: number, quantity: number, userId: string, orderType: STOCK_TYPE }) {
+    const oppositePrice = 10 - price;
+    if (orderType === STOCK_TYPE.YES) {
+      if (!this.ORDERBOOK[stockSymbol].no[oppositePrice]) {
+        this.ORDERBOOK[stockSymbol].no[oppositePrice] = { total: 0, orders: {} };
+      }
+      this.ORDERBOOK[stockSymbol].no[oppositePrice].total += quantity;
+      this.ORDERBOOK[stockSymbol].no[oppositePrice].orders[userId] = {
+        type: "system_generated",
+        quantity:
+          (this.ORDERBOOK[stockSymbol].no[oppositePrice].orders[userId]?.quantity ||
+            0) + quantity,
+      };
+    } else {
+      if (!this.ORDERBOOK[stockSymbol].yes[oppositePrice]) {
+        this.ORDERBOOK[stockSymbol].yes[oppositePrice] = { total: 0, orders: {} };
+      }
+      this.ORDERBOOK[stockSymbol].yes[oppositePrice].total += quantity;
+      this.ORDERBOOK[stockSymbol].yes[oppositePrice].orders[userId] = {
+        type: "system_generated",
+        quantity:
+          (this.ORDERBOOK[stockSymbol].yes[oppositePrice].orders[userId]?.quantity ||
+            0) + quantity,
+      };
+    }
+  }
+
+  initializeStockBalance({ userId, stockSymbol }: { userId: string, stockSymbol: string }) {
+    if (!this.STOCK_BALANCES[userId]) {
+      this.STOCK_BALANCES[userId] = {};
+    }
+    if (!this.STOCK_BALANCES[userId][stockSymbol]) {
+      this.STOCK_BALANCES[userId][stockSymbol] = {
+        yes: { quantity: 0, locked: 0 },
+        no: { quantity: 0, locked: 0 },
+      };
+    }
+  }
+
+  buyNo(
+    { price, quantity, stockSymbol, userId }: {
+      userId: string,
+      stockSymbol: string,
+      quantity: number,
+      price: number
+    }
+  ): Response {
+
+    this.INR_BALANCES[userId].balance -= quantity * price * 100;
+    this.INR_BALANCES[userId].locked += quantity * price * 100;
+
+    if (!this.ORDERBOOK[stockSymbol]) {
+      return { statusMessage: `${stockSymbol} Stock Not Found`, statusCode: 404, statusType: STATUS_TYPE.ERROR };
+    }
+
+    let availableQuantity = 0;
+    let availableYesQuantity = 0;
+    if (this.ORDERBOOK[stockSymbol].no[price]) {
+      availableQuantity = this.ORDERBOOK[stockSymbol].no[price].total;
+      availableYesQuantity = this.ORDERBOOK[stockSymbol].yes[10 - price]?.total || 0;
+    }
+
+    let OUR_QUANTITY = quantity;
+
+    if (availableQuantity > 0) {
+      for (let user in this.ORDERBOOK[stockSymbol].no[price].orders) {
+        if (!this.STOCK_BALANCES[userId]) {
+          this.STOCK_BALANCES[userId] = {};
+        }
+
+        if (!this.STOCK_BALANCES[user]) {
+          this.STOCK_BALANCES[user] = {};
+        }
+
+        if (!this.STOCK_BALANCES[userId][stockSymbol]) {
+          this.STOCK_BALANCES[userId][stockSymbol] = {
+            yes: { quantity: 0, locked: 0 },
+            no: { quantity: 0, locked: 0 },
+          };
+        }
+
+        if (!this.STOCK_BALANCES[user][stockSymbol]) {
+          this.STOCK_BALANCES[user][stockSymbol] = {
+            yes: { quantity: 0, locked: 0 },
+            no: { quantity: 0, locked: 0 },
+          };
+        }
+
+        if (OUR_QUANTITY <= 0) break;
+
+        const available = this.ORDERBOOK[stockSymbol].no[price].orders[user].quantity;
+        const toTake = Math.min(available, OUR_QUANTITY);
+
+        this.ORDERBOOK[stockSymbol].no[price].orders[user].quantity -= toTake;
+        this.ORDERBOOK[stockSymbol].no[price].total -= toTake;
+        OUR_QUANTITY -= toTake;
+
+        if (this.ORDERBOOK[stockSymbol].no[price].orders[user].type == "sell") {
+          if (this.STOCK_BALANCES[user][stockSymbol].no) {
+            this.STOCK_BALANCES[user][stockSymbol].no.locked -= toTake;
+            this.INR_BALANCES[user].balance += toTake * 100 * price;
+          }
+        } else if (
+          this.ORDERBOOK[stockSymbol].no[price].orders[user].type == "system_generated"
+        ) {
+          if (this.STOCK_BALANCES[user][stockSymbol].yes) {
+            this.STOCK_BALANCES[user][stockSymbol].yes.quantity += toTake;
+            this.INR_BALANCES[user].locked -= toTake * 100 * price;
+          }
+        }
+
+        if (this.ORDERBOOK[stockSymbol].no[price].orders[user].quantity === 0) {
+          delete this.ORDERBOOK[stockSymbol].no[price].orders[user];
+        }
+      }
+
+      if (this.ORDERBOOK[stockSymbol].no[price].total === 0) {
+        delete this.ORDERBOOK[stockSymbol].no[price];
+      }
+    }
+
+    if (availableYesQuantity > 0 && this.ORDERBOOK[stockSymbol].yes[10 - price]) {
+      for (let user in this.ORDERBOOK[stockSymbol].yes[10 - price].orders) {
+        if (!this.STOCK_BALANCES[userId]) {
+          this.STOCK_BALANCES[userId] = {};
+        }
+
+        if (!this.STOCK_BALANCES[user]) {
+          this.STOCK_BALANCES[user] = {};
+        }
+
+        if (!this.STOCK_BALANCES[userId][stockSymbol]) {
+          this.STOCK_BALANCES[userId][stockSymbol] = {
+            yes: { quantity: 0, locked: 0 },
+            no: { quantity: 0, locked: 0 },
+          };
+        }
+
+        if (!this.STOCK_BALANCES[user][stockSymbol]) {
+          this.STOCK_BALANCES[user][stockSymbol] = {
+            yes: { quantity: 0, locked: 0 },
+            no: { quantity: 0, locked: 0 },
+          };
+        }
+        if (OUR_QUANTITY <= 0) break;
+
+        const available =
+          this.ORDERBOOK[stockSymbol].yes[10 - price].orders[user].quantity;
+        const toTake = Math.min(available, OUR_QUANTITY);
+
+        this.ORDERBOOK[stockSymbol].yes[10 - price].orders[user].quantity -= toTake;
+        this.ORDERBOOK[stockSymbol].yes[10 - price].total -= toTake;
+        OUR_QUANTITY -= toTake;
+
+        if (this.ORDERBOOK[stockSymbol].yes[10 - price].orders[user].type == "sell") {
+          if (this.STOCK_BALANCES[user][stockSymbol].yes) {
+            this.STOCK_BALANCES[user][stockSymbol].yes.locked -= toTake;
+            this.INR_BALANCES[user].balance += toTake * 100 * (10 - price);
+          }
+        } else if (
+          this.ORDERBOOK[stockSymbol].yes[10 - price].orders[user].type == "system_generated"
+        ) {
+          if (this.STOCK_BALANCES[user][stockSymbol].no) {
+            this.STOCK_BALANCES[user][stockSymbol].no.quantity += toTake;
+            this.INR_BALANCES[user].locked -= toTake * 100 * (10 - price);
+          }
+        }
+
+        if (this.ORDERBOOK[stockSymbol].yes[10 - price].orders[user].quantity === 0) {
+          delete this.ORDERBOOK[stockSymbol].yes[10 - price].orders[user];
+        }
+      }
+
+      if (this.ORDERBOOK[stockSymbol].yes[10 - price].total === 0) {
+        delete this.ORDERBOOK[stockSymbol].yes[10 - price];
+      }
+    }
+
+    if (OUR_QUANTITY > 0) {
+      this.mintOppositeStocks({ stockSymbol, price, quantity: OUR_QUANTITY, userId, orderType: STOCK_TYPE.NO, });
+    }
+
+    this.initializeStockBalance({ userId, stockSymbol });
+
+    if (this.STOCK_BALANCES[userId][stockSymbol]?.no) {
+      this.STOCK_BALANCES[userId][stockSymbol].no.quantity += quantity - OUR_QUANTITY;
+    }
+
+
+    this.INR_BALANCES[userId].locked -= (quantity - OUR_QUANTITY) * price * 100;
+
+    return {
+      statusCode: 200,
+      statusType: STATUS_TYPE.SUCCESS,
+      statusMessage: `Buy order for 'no' has been added for ${stockSymbol} stock`,
+      data: {
+        orderbook: this.ORDERBOOK[stockSymbol],
+
+      }
+    };
+  };
+
+  sellYes = (
+    { userId, stockSymbol, price, quantity }: {
+      userId: string,
+      stockSymbol: string,
+      quantity: number,
+      price: number
+    }
+  ): Response => {
+    if (!this.ORDERBOOK[stockSymbol]) {
+      return { statusMessage: "Invalid stock symbol", statusCode: 404, statusType: STATUS_TYPE.ERROR };
+    }
+
+    if (!this.INR_BALANCES[userId]) {
+      this.INR_BALANCES[userId] = { balance: 0, locked: 0 }
+    }
+
+    if (
+      !this.STOCK_BALANCES[userId]?.[stockSymbol]?.yes ||
+      this.STOCK_BALANCES[userId][stockSymbol].yes.quantity < quantity
+    ) {
+      return { statusMessage: 'Insufficient "yes" stocks to sell', statusCode: 400, statusType: STATUS_TYPE.ERROR };
+    }
+
+    this.STOCK_BALANCES[userId][stockSymbol].yes.quantity -= quantity;
+    this.STOCK_BALANCES[userId][stockSymbol].yes.locked += quantity;
+
+    let remainingQuantity = quantity;
+    let opposingPrice = 10 - price;
+
+    for (let price_2 in this.ORDERBOOK[stockSymbol].no) {
+      if (remainingQuantity <= 0) break;
+      if (parseFloat(price_2) > opposingPrice) continue;
+
+      for (let user in this.ORDERBOOK[stockSymbol].no[price_2].orders) {
+        if (remainingQuantity <= 0) break;
+
+        const availableQuantity =
+          this.ORDERBOOK[stockSymbol].no[price_2].orders[user].quantity;
+        const matchedQuantity = Math.min(availableQuantity, remainingQuantity);
+
+        this.ORDERBOOK[stockSymbol].no[price_2].orders[user].quantity -= matchedQuantity;
+        this.ORDERBOOK[stockSymbol].no[price_2].total -= matchedQuantity;
+        remainingQuantity -= matchedQuantity;
+
+        if (this.STOCK_BALANCES[user][stockSymbol].no) {
+          this.STOCK_BALANCES[user][stockSymbol].no.locked -= matchedQuantity;
+        }
+
+        this.INR_BALANCES[user].balance += matchedQuantity * parseFloat(price_2) * 100;
+      }
+
+      if (this.ORDERBOOK[stockSymbol].no[price_2].total === 0) {
+        delete this.ORDERBOOK[stockSymbol].no[price_2];
+      }
+    }
+
+    this.INR_BALANCES[userId].balance += (quantity - remainingQuantity) * price * 100;
+    this.STOCK_BALANCES[userId][stockSymbol].yes.locked -=
+      quantity - remainingQuantity;
+
+    if (remainingQuantity > 0) {
+      if (!this.ORDERBOOK[stockSymbol].yes[price]) {
+        this.ORDERBOOK[stockSymbol].yes[price] = { total: 0, orders: {} };
+      }
+
+      if (!this.ORDERBOOK[stockSymbol].yes[price].orders[userId]) {
+        this.ORDERBOOK[stockSymbol].yes[price].orders[userId] = {
+          quantity: 0,
+          type: "sell",
+        };
+      }
+
+      this.ORDERBOOK[stockSymbol].yes[price].total += remainingQuantity;
+      this.ORDERBOOK[stockSymbol].yes[price].orders[userId].quantity +=
+        remainingQuantity;
+    }
+
+    return {
+      statusMessage: `Sell order for 'yes' stock has been placed for ${stockSymbol}`,
+      statusCode: 200,
+      statusType: STATUS_TYPE.SUCCESS,
+      data: {
+        orderbook: this.ORDERBOOK[stockSymbol],
+      }
+    };
+  };
+
+  sellNo = ({ price, quantity, stockSymbol, userId }: {
+    userId: string,
+    stockSymbol: string,
+    quantity: number,
+    price: number
+  }
+  ): Response => {
+    if (!this.ORDERBOOK[stockSymbol]) {
+      return { statusMessage: `${stockSymbol} Stock Not Found`, statusCode: 404, statusType: STATUS_TYPE.SUCCESS };
+    }
+
+    if (
+      !this.STOCK_BALANCES[userId]?.[stockSymbol]?.no ||
+      this.STOCK_BALANCES[userId][stockSymbol].no.quantity < quantity
+    ) {
+      return { statusMessage: 'Insufficient "no" stocks to sell', statusCode: 404, statusType: STATUS_TYPE.ERROR };
+    }
+
+    this.STOCK_BALANCES[userId][stockSymbol].no.quantity -= quantity;
+    this.STOCK_BALANCES[userId][stockSymbol].no.locked += quantity;
+
+    let remainingQuantity = quantity;
+    let opposingPrice = 10 - price;
+
+    for (let price_2 in this.ORDERBOOK[stockSymbol].yes) {
+      if (remainingQuantity <= 0) break;
+      if (parseFloat(price_2) > opposingPrice) continue;
+
+      for (let user in this.ORDERBOOK[stockSymbol].yes[price_2].orders) {
+        if (remainingQuantity <= 0) break;
+
+        const availableQuantity =
+          this.ORDERBOOK[stockSymbol].yes[price_2].orders[user].quantity;
+        const matchedQuantity = Math.min(availableQuantity, remainingQuantity);
+
+        this.ORDERBOOK[stockSymbol].yes[price_2].orders[user].quantity -= matchedQuantity;
+        this.ORDERBOOK[stockSymbol].yes[price_2].total -= matchedQuantity;
+        remainingQuantity -= matchedQuantity;
+
+        if (this.STOCK_BALANCES[user][stockSymbol].yes) {
+          this.STOCK_BALANCES[user][stockSymbol].yes.locked -= matchedQuantity;
+        }
+
+        this.INR_BALANCES[user].balance += matchedQuantity * parseFloat(price_2) * 100;
+      }
+
+      if (this.ORDERBOOK[stockSymbol].yes[price_2].total === 0) {
+        delete this.ORDERBOOK[stockSymbol].yes[price_2];
+      }
+    }
+
+    this.INR_BALANCES[userId].balance += (quantity - remainingQuantity) * price * 100;
+    this.STOCK_BALANCES[userId][stockSymbol].no.locked -= quantity - remainingQuantity;
+
+    if (remainingQuantity > 0) {
+      if (!this.ORDERBOOK[stockSymbol].no[price]) {
+        this.ORDERBOOK[stockSymbol].no[price] = { total: 0, orders: {} };
+      }
+
+      if (!this.ORDERBOOK[stockSymbol].no[price].orders[userId]) {
+        this.ORDERBOOK[stockSymbol].no[price].orders[userId] = {
+          quantity: 0,
+          type: "sell",
+        };
+      }
+
+      this.ORDERBOOK[stockSymbol].no[price].total += remainingQuantity;
+      this.ORDERBOOK[stockSymbol].no[price].orders[userId].quantity +=
+        remainingQuantity;
+    }
+
+    return {
+      statusMessage: `Sell order for 'no' stock has been placed for ${stockSymbol}`,
+      statusCode: 200, statusType: STATUS_TYPE.SUCCESS,
+      data: { orderbook: this.ORDERBOOK[stockSymbol] }
+    };
+  };
+
+  sell({ userId, stockSymbol, quantity, price, stockType }: { userId: string, stockSymbol: string, quantity: number, price: number, stockType: STOCK_TYPE }): Response {
+    if (stockType === STOCK_TYPE.YES) {
+      return this.sellYes({ price, quantity, stockSymbol, userId })
+    } else if (stockType === STOCK_TYPE.NO) {
+      return this.sellNo({ price, quantity, stockSymbol, userId })
+    }
+
+    return {
+      statusCode: 400,
+      statusMessage: "Something Went Wrong",
+      statusType: STATUS_TYPE.ERROR,
+    }
+  }
 }
+
+
+

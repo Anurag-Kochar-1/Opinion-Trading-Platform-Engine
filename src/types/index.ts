@@ -21,6 +21,21 @@ type OrderBookEntry = {
 
 export type OrderBook = Record<string, OrderBookEntry>;
 
+export interface IndividualEntry {
+  type: 'sell' | 'system_generated',
+  quantity: number
+}
+
+export interface OrderEntry {
+  total: number;
+  orders: Record<string, IndividualEntry>;
+}
+
+export interface Orderbook_2 {
+  yes: Record<number, OrderEntry>;
+  no: Record<number, OrderEntry>;
+}
+
 type StockBalanceSide = {
   quantity: number;
   locked: number;
@@ -59,6 +74,10 @@ export enum MESSAGE_TYPE {
   ONRAMP_USER_BALANCE = "ONRAMP_USER_BALANCE",
   RESET_STATES = "RESET_STATES",
 }
+export enum STOCK_TYPE {
+  YES = "yes",
+  NO = "no"
+}
 
 
 export type MessageFromApi =
@@ -67,6 +86,9 @@ export type MessageFromApi =
     data: { userId: string };
   }
   | {
+    type: MESSAGE_TYPE.MINT_TOKENS,
+    data: { userId: string, stockSymbol: string, quantity: number }
+  } | {
     type: MESSAGE_TYPE.CREATE_SYMBOL;
     data: { stockSymbol: string };
   } | {
@@ -93,4 +115,7 @@ export type MessageFromApi =
   } | {
     type: MESSAGE_TYPE.RESET_STATES,
     data: {}
+  } | {
+    type: MESSAGE_TYPE.BUY_ORDER | MESSAGE_TYPE.SELL_ORDER,
+    data: { userId: string, stockSymbol: string, quantity: number, price: number, stockType: STOCK_TYPE }
   }; 
