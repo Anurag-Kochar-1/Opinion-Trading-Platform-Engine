@@ -34,7 +34,7 @@ export type TODO = any;
 
 export enum STATUS_TYPE {
   SUCCESS = "SUCCESS",
-  ERROR =  "ERROR",
+  ERROR = "ERROR",
 }
 
 export type Response<T = unknown> = {
@@ -72,4 +72,7 @@ export type MessageFromApi =
   } | {
     type: MESSAGE_TYPE.VIEW_ORDERBOOK;
     data: {};
+  } | {
+    type: MESSAGE_TYPE.GET_ORDERBOOK_BY_STOCK_SYMBOL,
+    data: { stockSymbol: string };
   };

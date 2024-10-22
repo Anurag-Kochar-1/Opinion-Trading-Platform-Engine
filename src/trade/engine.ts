@@ -36,6 +36,9 @@ export class Engine {
       case MESSAGE_TYPE.VIEW_ORDERBOOK:
         response = this.viewOrderbook();
         break;
+      case MESSAGE_TYPE.GET_ORDERBOOK_BY_STOCK_SYMBOL:
+        response = this.viewOrderbookBySymbol({ stockSymbol: message?.data?.stockSymbol });
+        break;
       default:
         throw new Error("This message type is not supported by engine");
     }
@@ -92,6 +95,27 @@ export class Engine {
       statusType: STATUS_TYPE.SUCCESS,
       statusCode: 200,
       data: this.ORDERBOOK
+    }
+  }
+
+  viewOrderbookBySymbol({ stockSymbol }: { stockSymbol: string }): Response {
+    const orderbook = this.ORDERBOOK[stockSymbol] || {};
+    const isEmpty = Object.keys(orderbook).length === 0;
+    console.log(orderbook, isEmpty)
+    if (isEmpty) {
+      return {
+        statusCode: 404,
+        statusMessage: `Orderbook for ${stockSymbol} Symbol Not Found!`,
+        statusType: STATUS_TYPE.ERROR,
+        data: orderbook
+      }
+    }
+
+    return {
+      statusCode: 200,
+      statusMessage: "",
+      statusType: STATUS_TYPE.SUCCESS,
+      data: orderbook
     }
   }
 }
