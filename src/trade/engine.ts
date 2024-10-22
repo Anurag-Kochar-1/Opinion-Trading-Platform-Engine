@@ -22,9 +22,7 @@ export class Engine {
     clientId: string;
     message: MessageFromApi;
   }) {
-    logger(`Engine is processing, client id - ${clientId}`);
-    console.log(JSON.stringify(message));
-    // @ts-nocheck
+    logger(`Engine is processing, client id - ${clientId}, message type - ${message.type}`);
     let response;
     switch (message.type) {
       case MESSAGE_TYPE.CREATE_USER:
@@ -39,6 +37,22 @@ export class Engine {
       case MESSAGE_TYPE.GET_ORDERBOOK_BY_STOCK_SYMBOL:
         response = this.viewOrderbookBySymbol({ stockSymbol: message?.data?.stockSymbol });
         break;
+      case MESSAGE_TYPE.GET_INR_BALANCES:
+        response = this.getInrBalances();
+        break;
+      case MESSAGE_TYPE.GET_STOCK_BALANCES:
+        response = this.getStockBalances();
+        break;
+      case MESSAGE_TYPE.GET_USER_BALANCE:
+        response = this.getInrBalanceByUser({ userId: message?.data?.userId });
+        break;
+      case MESSAGE_TYPE.GET_USER_STOCK_BALANCE:
+        response = this.getStockBalanceByUser({ userId: message?.data?.userId });
+        break;
+      case MESSAGE_TYPE.ONRAMP_USER_BALANCE:
+        response = this.onrampInr({ userId: message?.data?.userId, amount: message?.data?.amount });
+        break;
+
       default:
         throw new Error("This message type is not supported by engine");
     }
@@ -101,7 +115,6 @@ export class Engine {
   viewOrderbookBySymbol({ stockSymbol }: { stockSymbol: string }): Response {
     const orderbook = this.ORDERBOOK[stockSymbol] || {};
     const isEmpty = Object.keys(orderbook).length === 0;
-    console.log(orderbook, isEmpty)
     if (isEmpty) {
       return {
         statusCode: 404,
@@ -117,5 +130,68 @@ export class Engine {
       statusType: STATUS_TYPE.SUCCESS,
       data: orderbook
     }
+  }
+
+
+  getInrBalances(): Response {
+    const data = this.INR_BALANCES
+    return {
+      statusCode: 200,
+      statusMessage: "",
+      statusType: STATUS_TYPE.SUCCESS,
+      data
+    }
+  }
+
+  getStockBalances(): Response {
+    const data = this.STOCK_BALANCES
+    return {
+      statusCode: 200,
+      statusMessage: "",
+      statusType: STATUS_TYPE.SUCCESS,
+      data
+    }
+  }
+
+  getInrBalanceByUser({ userId }: { userId: string }): Response {
+    const userBalance = this.INR_BALANCES[userId]
+    if (!userBalance) {
+      return {
+        statusCode: 404,
+        statusMessage: `${userId} User Not Found`,
+        statusType: STATUS_TYPE.ERROR,
+      }
+    }
+    return {
+      statusCode: 200,
+      statusMessage: "",
+      statusType: STATUS_TYPE.SUCCESS,
+      data: userBalance
+    }
+  }
+
+  getStockBalanceByUser({ userId }: { userId: string }): Response {
+    const userStockBalance = this.STOCK_BALANCES[userId]
+    if (!userStockBalance) {
+      return {
+        statusCode: 404,
+        statusMessage: `${userId} User Not Found`,
+        statusType: STATUS_TYPE.ERROR,
+      }
+    }
+    return {
+      statusCode: 200,
+      statusMessage: "",
+      statusType: STATUS_TYPE.SUCCESS,
+      data: userStockBalance
+    }
+  }
+
+  onrampInr({ userId, amount }: { userId: string, amount: number }): Response {
+    if (!this.INR_BALANCES[userId]) {
+      return { statusType: STATUS_TYPE.ERROR, statusMessage: `User ${userId} not found`, statusCode: 404, }
+    }
+    this.INR_BALANCES[userId].balance += amount;
+    return { statusType: STATUS_TYPE.SUCCESS, statusMessage: `INR ${amount} added to ${userId} user`, statusCode: 200, }
   }
 }

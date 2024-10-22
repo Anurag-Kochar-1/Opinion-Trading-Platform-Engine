@@ -75,4 +75,19 @@ export type MessageFromApi =
   } | {
     type: MESSAGE_TYPE.GET_ORDERBOOK_BY_STOCK_SYMBOL,
     data: { stockSymbol: string };
-  };
+  } | {
+    type: MESSAGE_TYPE.GET_INR_BALANCES,
+    data: {};
+  } | {
+    type: MESSAGE_TYPE.GET_STOCK_BALANCES;
+    data: {}
+  } | {
+    type: MESSAGE_TYPE.GET_USER_BALANCE;
+    data: { userId: string }
+  } | {
+    type: MESSAGE_TYPE.GET_USER_STOCK_BALANCE;
+    data: { userId: string }
+  } | {
+    type: MESSAGE_TYPE.ONRAMP_USER_BALANCE,
+    data: { userId: string, amount: number }
+  }; 
