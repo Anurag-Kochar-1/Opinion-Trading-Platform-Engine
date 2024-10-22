@@ -90,4 +90,7 @@ export type MessageFromApi =
   } | {
     type: MESSAGE_TYPE.ONRAMP_USER_BALANCE,
     data: { userId: string, amount: number }
+  } | {
+    type: MESSAGE_TYPE.RESET_STATES,
+    data: {}
   }; 

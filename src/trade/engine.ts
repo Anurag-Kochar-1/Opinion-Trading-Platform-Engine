@@ -52,6 +52,9 @@ export class Engine {
       case MESSAGE_TYPE.ONRAMP_USER_BALANCE:
         response = this.onrampInr({ userId: message?.data?.userId, amount: message?.data?.amount });
         break;
+      case MESSAGE_TYPE.RESET_STATES:
+        response = this.resetStates();
+        break;
 
       default:
         throw new Error("This message type is not supported by engine");
@@ -193,5 +196,16 @@ export class Engine {
     }
     this.INR_BALANCES[userId].balance += amount;
     return { statusType: STATUS_TYPE.SUCCESS, statusMessage: `INR ${amount} added to ${userId} user`, statusCode: 200, }
+  }
+
+  resetStates(): Response {
+    this.INR_BALANCES = {}
+    this.STOCK_BALANCES = {}
+    this.ORDERBOOK = {}
+    return {
+      statusCode: 200,
+      statusMessage: "Reset done!",
+      statusType: STATUS_TYPE.SUCCESS,
+    }
   }
 }
