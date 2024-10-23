@@ -99,9 +99,11 @@ export class Engine {
         break;
       case MESSAGE_TYPE.BUY_ORDER:
         response = this.buy({ userId: message?.data?.userId, price: message?.data?.price, quantity: message?.data?.quantity, stockSymbol: message?.data?.stockSymbol, stockType: message?.data?.stockType });
+        this.publishOrderbook()
         break;
       case MESSAGE_TYPE.SELL_ORDER:
         response = this.sell({ userId: message?.data?.userId, price: message?.data?.price, quantity: message?.data?.quantity, stockSymbol: message?.data?.stockSymbol, stockType: message?.data?.stockType });
+        this.publishOrderbook()
         break;
       case MESSAGE_TYPE.RESET_STATES:
         response = this.resetStates();
@@ -125,13 +127,19 @@ export class Engine {
         message: JSON.stringify(response),
       },
     });
+  }
 
-    // RedisManager.getInstance().publishMessage(
-    //   `orderbook.${message?.type}`,
-    //   {
-    //     message: JSON.stringify(response),
-    //   }
-    // );
+  publishOrderbook() {
+    for (const stockSymbol in this.ORDERBOOK) {
+      const channel = `orderbook.${stockSymbol}`;
+      RedisManager.getInstance().publishMessage(
+        `orderbook.${stockSymbol}`,
+        {
+          message: JSON.stringify(this.ORDERBOOK[stockSymbol]),
+        }
+      );
+      console.log(`Published orderbook for ${stockSymbol} stock to ${channel} channel`);
+    }
   }
 
   createUser({ userId }: { userId: string }): Response {
