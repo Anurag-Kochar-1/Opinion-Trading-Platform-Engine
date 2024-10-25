@@ -99,11 +99,11 @@ export class Engine {
         break;
       case MESSAGE_TYPE.BUY_ORDER:
         response = this.buy({ userId: message?.data?.userId, price: message?.data?.price, quantity: message?.data?.quantity, stockSymbol: message?.data?.stockSymbol, stockType: message?.data?.stockType });
-        this.publishOrderbook()
+        this.publishOrderbook(message?.data?.stockSymbol)
         break;
       case MESSAGE_TYPE.SELL_ORDER:
         response = this.sell({ userId: message?.data?.userId, price: message?.data?.price, quantity: message?.data?.quantity, stockSymbol: message?.data?.stockSymbol, stockType: message?.data?.stockType });
-        this.publishOrderbook()
+        this.publishOrderbook(message?.data?.stockSymbol)
         break;
       case MESSAGE_TYPE.RESET_STATES:
         response = this.resetStates();
@@ -117,7 +117,10 @@ export class Engine {
         console.log(restoredData)
         break;
 
+      case MESSAGE_TYPE.GET_USER:
+        response = this.getUser({ userId: message?.data?.userId });
       default:
+
         throw new Error("This message type is not supported by engine");
     }
 
@@ -129,17 +132,15 @@ export class Engine {
     });
   }
 
-  publishOrderbook() {
-    for (const stockSymbol in this.ORDERBOOK) {
-      const channel = `orderbook.${stockSymbol}`;
-      RedisManager.getInstance().publishMessage(
-        `orderbook.${stockSymbol}`,
-        {
-          message: JSON.stringify(this.ORDERBOOK[stockSymbol]),
-        }
-      );
-      console.log(`Published orderbook for ${stockSymbol} stock to ${channel} channel`);
-    }
+  publishOrderbook(stockSymbol: string) {
+    const channel = `orderbook.${stockSymbol}`;
+    RedisManager.getInstance().publishMessage(
+      `orderbook.${stockSymbol}`,
+      {
+        message: JSON.stringify(this.ORDERBOOK[stockSymbol]),
+      }
+    );
+    console.log(`Published orderbook for ${stockSymbol} stock to ${channel} channel`);
   }
 
   createUser({ userId }: { userId: string }): Response {
@@ -306,6 +307,20 @@ export class Engine {
   }
 
 
+  getUser({ userId }: { userId: string }): Response {
+    if (!this.INR_BALANCES[userId]) {
+      return {
+        statusCode: 404,
+        statusMessage: "User not found",
+        statusType: STATUS_TYPE.ERROR,
+      }
+    }
+    return {
+      statusCode: 400,
+      statusMessage: "User found",
+      statusType: STATUS_TYPE.SUCCESS,
+    }
+  }
 
   buy({ userId, stockSymbol, quantity, price, stockType }: { userId: string, stockSymbol: string, quantity: number, price: number, stockType: STOCK_TYPE }): Response {
     if (stockType === STOCK_TYPE.YES) {

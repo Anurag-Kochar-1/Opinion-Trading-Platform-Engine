@@ -75,6 +75,7 @@ export enum MESSAGE_TYPE {
   RESET_STATES = "RESET_STATES",
   CRASH_SERVER = "CRASH_SERVER",
   RESTORE_SERVER_STATE = "RESTORE_SERVER_STATE",
+  GET_USER = "GET_USER",
 }
 export enum STOCK_TYPE {
   YES = "yes",
@@ -126,4 +127,7 @@ export type MessageFromApi =
   } | {
     type: MESSAGE_TYPE.RESTORE_SERVER_STATE,
     data: {}
+  } | {
+    type: MESSAGE_TYPE.GET_USER,
+    data: { userId: string }
   }; 
