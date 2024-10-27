@@ -33,7 +33,7 @@ async function main() {
     );
   }
   const engine = new Engine();
-  engine.startSnapshots(0.5);
+  engine.startSnapshots(10);
 
   const redisClient = createClient(creds);
   await redisClient.connect();

@@ -116,11 +116,10 @@ export class Engine {
         const restoredData = this.snapshotManager.loadLatestSnapshot();
         console.log(restoredData)
         break;
-
       case MESSAGE_TYPE.GET_USER:
         response = this.getUser({ userId: message?.data?.userId });
+        break;
       default:
-
         throw new Error("This message type is not supported by engine");
     }
 
@@ -316,7 +315,7 @@ export class Engine {
       }
     }
     return {
-      statusCode: 400,
+      statusCode: 200,
       statusMessage: "User found",
       statusType: STATUS_TYPE.SUCCESS,
     }
