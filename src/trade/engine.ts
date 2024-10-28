@@ -291,7 +291,7 @@ export class Engine {
       return { statusType: STATUS_TYPE.ERROR, statusMessage: `User ${userId} not found`, statusCode: 404, }
     }
     this.INR_BALANCES[userId].balance += amount;
-    return { statusType: STATUS_TYPE.SUCCESS, statusMessage: `INR ${amount} added to ${userId} user`, statusCode: 200, }
+    return { statusType: STATUS_TYPE.SUCCESS, statusMessage: `INR ${amount} added to ${userId} user`, statusCode: 200 }
   }
 
   resetStates(): Response {
@@ -335,6 +335,35 @@ export class Engine {
   }
 
 
+  validateUserExistenceAndBalance = (
+    { userId, price, quantity }: {
+      userId: string,
+      quantity: number,
+      price: number,
+    }
+  ): Response | void => {
+    if (!this.INR_BALANCES[userId]) return {
+      statusCode: 404,
+      statusMessage: `${userId} User Not Found`,
+      statusType: STATUS_TYPE.ERROR,
+    };
+    if (this.INR_BALANCES[userId].balance < quantity * price || price <= 0) {
+      return {
+        statusCode: 400,
+        statusMessage: `Low balance for this order :()`,
+        statusType: STATUS_TYPE.ERROR,
+      };
+    }
+
+  };
+
+  validateStockSymbolExistence = ({ stockSymbol }: { stockSymbol: string }): Response | void => {
+    if (!this.ORDERBOOK[stockSymbol]) {
+      return { statusMessage: `${stockSymbol} Stock Not Found`, statusCode: 404, statusType: STATUS_TYPE.ERROR };
+    }
+  }
+
+
 
   buyYes({ userId, stockSymbol, price, quantity }: {
     userId: string,
@@ -343,10 +372,9 @@ export class Engine {
     price: number
   }
   ): Response {
-    // 🍎 TODO: add validation here also
-    if (!this.INR_BALANCES[userId]) {
-      this.INR_BALANCES[userId] = { balance: 0, locked: 0 }
-    }
+    this.validateStockSymbolExistence({ stockSymbol })
+    this.validateUserExistenceAndBalance({ price, quantity, userId })
+
 
     this.INR_BALANCES[userId].balance -= quantity * price * 100;
     this.INR_BALANCES[userId].locked += quantity * price * 100;
@@ -502,6 +530,7 @@ export class Engine {
   }
 
   buyNo(
+
     { price, quantity, stockSymbol, userId }: {
       userId: string,
       stockSymbol: string,
@@ -510,12 +539,13 @@ export class Engine {
     }
   ): Response {
 
+    this.validateStockSymbolExistence({ stockSymbol })
+    this.validateUserExistenceAndBalance({ price, quantity, userId })
+
     this.INR_BALANCES[userId].balance -= quantity * price * 100;
     this.INR_BALANCES[userId].locked += quantity * price * 100;
 
-    if (!this.ORDERBOOK[stockSymbol]) {
-      return { statusMessage: `${stockSymbol} Stock Not Found`, statusCode: 404, statusType: STATUS_TYPE.ERROR };
-    }
+
 
     let availableQuantity = 0;
     let availableYesQuantity = 0;
@@ -672,13 +702,9 @@ export class Engine {
       price: number
     }
   ): Response => {
-    if (!this.ORDERBOOK[stockSymbol]) {
-      return { statusMessage: "Invalid stock symbol", statusCode: 404, statusType: STATUS_TYPE.ERROR };
-    }
+    this.validateStockSymbolExistence({ stockSymbol })
+    this.validateUserExistenceAndBalance({ price, quantity, userId })
 
-    if (!this.INR_BALANCES[userId]) {
-      this.INR_BALANCES[userId] = { balance: 0, locked: 0 }
-    }
 
     if (
       !this.STOCK_BALANCES[userId]?.[stockSymbol]?.yes ||
@@ -758,9 +784,8 @@ export class Engine {
     price: number
   }
   ): Response => {
-    if (!this.ORDERBOOK[stockSymbol]) {
-      return { statusMessage: `${stockSymbol} Stock Not Found`, statusCode: 404, statusType: STATUS_TYPE.SUCCESS };
-    }
+    this.validateStockSymbolExistence({stockSymbol})
+    this.validateUserExistenceAndBalance({ price, quantity, userId })
 
     if (
       !this.STOCK_BALANCES[userId]?.[stockSymbol]?.no ||
