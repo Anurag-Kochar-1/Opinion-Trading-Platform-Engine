@@ -1,8 +1,31 @@
 {
-  "lastUpdated": "2024-10-28T16:19:42.205Z",
+  "lastUpdated": "2024-10-31T17:10:04.515Z",
   "data": {
-    "orderbook": {},
-    "stockBalances": {},
-    "inrBalances": {}
+    "orderbook": {
+      "TESLA_AT_252": {
+        "yes": {},
+        "no": {}
+      }
+    },
+    "stockBalances": {
+      "user1": {
+        "TESLA_AT_252": {
+          "yes": {
+            "quantity": 100,
+            "locked": 0
+          },
+          "no": {
+            "quantity": 100,
+            "locked": 0
+          }
+        }
+      }
+    },
+    "inrBalances": {
+      "user1": {
+        "balance": 0,
+        "locked": 0
+      }
+    }
   }
 }

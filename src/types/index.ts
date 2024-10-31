@@ -5,14 +5,14 @@ type INRBalance = {
 
 export type INRBalances = Record<string, INRBalance>;
 
-type Order = Record<string, number>;
+type Order = Record<string, number>; // string is userId, and number is quantity
 
 type OrderLevel = {
   total: number;
   orders: Order;
 };
 
-type OrderBookSide = Record<string, OrderLevel>;
+type OrderBookSide = Record<string, OrderLevel>; // string is price
 
 type OrderBookEntry = {
   yes: OrderBookSide;
@@ -76,6 +76,8 @@ export enum MESSAGE_TYPE {
   CRASH_SERVER = "CRASH_SERVER",
   RESTORE_SERVER_STATE = "RESTORE_SERVER_STATE",
   GET_USER = "GET_USER",
+  GET_ALL_STOCK_SYMBOLS = "GET_ALL_STOCK_SYMBOLS",
+  GET_USER_STOCK_BALANCE_BY_STOCK_SYMBOL = "GET_USER_STOCK_BALANCE_BY_STOCK_SYMBOL",
 }
 export enum STOCK_TYPE {
   YES = "yes",
@@ -130,4 +132,10 @@ export type MessageFromApi =
   } | {
     type: MESSAGE_TYPE.GET_USER,
     data: { userId: string }
+  } | {
+    type: MESSAGE_TYPE.GET_ALL_STOCK_SYMBOLS,
+    data: {}
+  } | {
+    type: MESSAGE_TYPE.GET_USER_STOCK_BALANCE_BY_STOCK_SYMBOL,
+    data: { userId: string, stockSymbol: string }
   }; 

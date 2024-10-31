@@ -119,6 +119,12 @@ export class Engine {
       case MESSAGE_TYPE.GET_USER:
         response = this.getUser({ userId: message?.data?.userId });
         break;
+      case MESSAGE_TYPE.GET_ALL_STOCK_SYMBOLS:
+        response = this.getAllStockSymbols()
+        break;
+      case MESSAGE_TYPE.GET_USER_STOCK_BALANCE_BY_STOCK_SYMBOL:
+        response = this.getUserStockBalanceByStockSymbol({ userId: message?.data?.userId, stockSymbol: message?.data?.stockSymbol })
+        break;
       default:
         throw new Error("This message type is not supported by engine");
     }
@@ -129,6 +135,48 @@ export class Engine {
         message: JSON.stringify(response),
       },
     });
+  }
+  getAllStockSymbols(): Response {
+    const data: { symbol: string, totalOrders: number }[] = [];
+    for (const [symbol, bookData] of Object.entries(this.ORDERBOOK)) {
+      let totalOrders = 0;
+      for (const priceLevel of Object.values(bookData.yes)) {
+        totalOrders += Object.keys(priceLevel.orders).length;
+      }
+      for (const priceLevel of Object.values(bookData.no)) {
+        totalOrders += Object.keys(priceLevel.orders).length;
+      }
+      data.push({
+        symbol,
+        totalOrders
+      });
+    }
+    const sortedData = data.sort((a, b) => b.totalOrders - a.totalOrders);
+    return {
+      statusCode: 200,
+      statusMessage: "",
+      statusType: STATUS_TYPE.SUCCESS,
+      data: sortedData
+    }
+  }
+
+
+  getUserStockBalanceByStockSymbol({ userId, stockSymbol }: { userId: string, stockSymbol: string }): Response {
+    if (!this.STOCK_BALANCES[userId]) {
+      return {
+        statusCode: 404,
+        statusMessage: "User Not Found!",
+        statusType: STATUS_TYPE.ERROR,
+        data: {}
+
+      }
+    }
+    return {
+      statusCode: 200,
+      statusMessage: "",
+      statusType: STATUS_TYPE.SUCCESS,
+      data: this.STOCK_BALANCES[userId][stockSymbol] ?? {}
+    }
   }
 
   publishOrderbook(stockSymbol: string) {
@@ -347,10 +395,10 @@ export class Engine {
       statusMessage: `${userId} User Not Found`,
       statusType: STATUS_TYPE.ERROR,
     };
-    if (this.INR_BALANCES[userId].balance < quantity * price || price <= 0) {
+    if (this.INR_BALANCES[userId].balance < (quantity * (price * 100)) || price <= 0) {
       return {
         statusCode: 400,
-        statusMessage: `Low balance for this order :()`,
+        statusMessage: `Low balance for this order :(`,
         statusType: STATUS_TYPE.ERROR,
       };
     }
@@ -784,7 +832,7 @@ export class Engine {
     price: number
   }
   ): Response => {
-    this.validateStockSymbolExistence({stockSymbol})
+    this.validateStockSymbolExistence({ stockSymbol })
     this.validateUserExistenceAndBalance({ price, quantity, userId })
 
     if (
