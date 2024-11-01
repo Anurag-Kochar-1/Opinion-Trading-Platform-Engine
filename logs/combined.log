@@ -1,0 +1,2 @@
+{"level":"info","message":"connected to redis - redis://redis-17801.c264.ap-south-1-1.ec2.redns.redis-cloud.com:17801","timestamp":"2024-11-01 22:27:49"}
+{"level":"info","message":"Taking final snapshot before shutdown...","timestamp":"2024-11-01 22:28:05"}

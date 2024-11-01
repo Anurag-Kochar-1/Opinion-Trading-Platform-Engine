@@ -2,18 +2,21 @@ import express, { Response } from "express";
 import cors from "cors";
 import { createClient } from "redis";
 import dotenv from "dotenv";
-import { logger } from "./utils";
 import { Engine } from "./trade/engine";
+import { errorLogger, requestLogger } from "./middlewares/request-logger";
+import { logger } from "./config/logger";
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use(requestLogger);
+app.use(errorLogger);
 const port = process.env.PORT || 4000;
 
 app.get("/", (_, res: Response) => {
+  logger.info('Home route accessed');
   res.json({ message: "ENGINE 🚂🚂🚂" });
 });
 
@@ -37,7 +40,7 @@ async function main() {
 
   const redisClient = createClient(creds);
   await redisClient.connect();
-  logger(`connected to redis - ${creds.url}`);
+  logger.info(`connected to redis - ${creds.url}`);
 
   while (true) {
     const response = await redisClient.rPop("messages" as string);
@@ -49,12 +52,12 @@ async function main() {
 }
 
 main().catch((error) => {
-  logger(`Fatal error: ${error.message}`);
+  logger.info(`Fatal error: ${error.message}`);
   process.exit(1);
 });
 
 process.on('SIGINT', async () => {
-  logger('Taking final snapshot before shutdown...');
+  logger.info('Taking final snapshot before shutdown...');
   Engine.getInstance().snapshotManager.takeSnapshot();
   Engine.getInstance().stopSnapshots();
   process.exit(0);

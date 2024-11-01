@@ -1,56 +1,8 @@
 {
-  "lastUpdated": "2024-11-01T14:43:25.376Z",
+  "lastUpdated": "2024-11-01T16:48:08.615Z",
   "data": {
-    "orderbook": {
-      "DOGE": {
-        "yes": {},
-        "no": {}
-      }
-    },
-    "stockBalances": {
-      "user1": {},
-      "user2": {},
-      "user3": {},
-      "user4": {},
-      "user5": {
-        "DOGE": {
-          "yes": {
-            "quantity": 25,
-            "locked": 0
-          },
-          "no": {
-            "quantity": 25,
-            "locked": 0
-          }
-        }
-      },
-      "user10": {}
-    },
-    "inrBalances": {
-      "user1": {
-        "balance": 0,
-        "locked": 0
-      },
-      "user2": {
-        "balance": 0,
-        "locked": 0
-      },
-      "user3": {
-        "balance": 0,
-        "locked": 0
-      },
-      "user4": {
-        "balance": 0,
-        "locked": 0
-      },
-      "user5": {
-        "balance": 0,
-        "locked": 0
-      },
-      "user10": {
-        "balance": 0,
-        "locked": 0
-      }
-    }
+    "orderbook": {},
+    "stockBalances": {},
+    "inrBalances": {}
   }
 }
