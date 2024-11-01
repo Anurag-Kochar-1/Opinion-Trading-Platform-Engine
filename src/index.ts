@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { Engine } from "./trade/engine";
 import { errorLogger, requestLogger } from "./middlewares/request-logger";
 import { logger } from "./config/logger";
+import { STATUS_TYPE } from "./types";
 
 dotenv.config();
 
@@ -18,6 +19,15 @@ const port = process.env.PORT || 4000;
 app.get("/", (_, res: Response) => {
   logger.info('Home route accessed');
   res.json({ message: "ENGINE 🚂🚂🚂" });
+});
+
+app.get("/ping", (_, res: Response) => {
+  logger.info('ping route accessed');
+  res.json({
+    statusType: STATUS_TYPE.SUCCESS,
+    statusMessage: "",
+    statusCode: 200
+  }).status(200);
 });
 
 app.listen(port, () => {

@@ -1,2 +1,68 @@
 {"level":"info","message":"connected to redis - redis://redis-17801.c264.ap-south-1-1.ec2.redns.redis-cloud.com:17801","timestamp":"2024-11-01 22:27:49"}
 {"level":"info","message":"Taking final snapshot before shutdown...","timestamp":"2024-11-01 22:28:05"}
+{"level":"info","message":"connected to redis - redis://redis-17801.c264.ap-south-1-1.ec2.redns.redis-cloud.com:17801","timestamp":"2024-11-02 02:59:40"}
+{"level":"info","message":"Taking final snapshot before shutdown...","timestamp":"2024-11-02 03:05:10"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Nov/2024:21:53:51 +0000] \"GET //ping HTTP/1.1\" 404 144 \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:23:51"}
+{"level":"info","message":"connected to redis - redis://redis-17801.c264.ap-south-1-1.ec2.redns.redis-cloud.com:17801","timestamp":"2024-11-02 03:23:51"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Nov/2024:21:53:55 +0000] \"GET //ping HTTP/1.1\" 404 144 \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:23:55"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Nov/2024:21:53:56 +0000] \"GET //ping HTTP/1.1\" 404 144 \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:23:56"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Nov/2024:21:54:16 +0000] \"GET //ping HTTP/1.1\" 404 144 \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:24:16"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:24:17"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Nov/2024:21:54:17 +0000] \"GET /ping HTTP/1.1\" 200 60 \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:24:17"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:24:38"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:54:38 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:24:38"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:24:48"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:54:48 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:24:48"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:24:49"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:54:49 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:24:49"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:24:50"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:54:50 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:24:50"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:24:51"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:54:51 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:24:51"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:27:27"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:57:27 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:27:27"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:27:37"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:57:37 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:27:37"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:27:40"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:57:40 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:27:40"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:27:41"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:57:41 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:27:41"}
+{"level":"info","message":"Taking final snapshot before shutdown...","timestamp":"2024-11-02 03:27:51"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:29:27"}
+{"level":"info","message":"::1 - - [01/Nov/2024:21:59:27 +0000] \"GET /ping HTTP/1.1\" 200 60 \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:29:27"}
+{"level":"info","message":"connected to redis - redis://redis-17801.c264.ap-south-1-1.ec2.redns.redis-cloud.com:17801","timestamp":"2024-11-02 03:29:27"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:30:03"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Nov/2024:22:00:03 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:30:03"}
+{"level":"info","message":"Taking final snapshot before shutdown...","timestamp":"2024-11-02 03:30:09"}
+{"level":"info","message":"connected to redis - redis://redis-17801.c264.ap-south-1-1.ec2.redns.redis-cloud.com:17801","timestamp":"2024-11-02 03:40:10"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:40:10"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:10:10 +0000] \"GET /ping HTTP/1.1\" 200 60 \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:40:10"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:40:14"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:10:14 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:40:14"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:41:22"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:11:22 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:41:22"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:41:23"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:11:23 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:41:23"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:41:25"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:11:25 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:41:25"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:41:29"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:11:29 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:41:29"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:41:30"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:11:30 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:41:30"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:41:32"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:11:32 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:41:32"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:41:44"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:11:44 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:41:44"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:42:28"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:12:28 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:42:28"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:42:29"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:12:29 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:42:29"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:42:38"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:12:38 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:42:38"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:42:44"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:12:44 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:42:44"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:42:52"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:12:52 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:42:52"}
+{"level":"info","message":"ping route accessed","timestamp":"2024-11-02 03:42:58"}
+{"level":"info","message":"::1 - - [01/Nov/2024:22:12:58 +0000] \"GET /ping HTTP/1.1\" 200 - \"http://localhost:3001/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0\" {}","timestamp":"2024-11-02 03:42:58"}
+{"level":"info","message":"Taking final snapshot before shutdown...","timestamp":"2024-11-02 03:43:55"}
