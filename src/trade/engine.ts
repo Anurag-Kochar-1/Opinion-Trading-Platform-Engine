@@ -194,7 +194,7 @@ export class Engine {
     if (this.INR_BALANCES[userId]) {
       return { statusType: STATUS_TYPE.ERROR, statusMessage: "User already exists!", statusCode: 400 };
     }
-    this.INR_BALANCES[userId] = { balance: 0, locked: 0 };
+    this.INR_BALANCES[userId] = { balance: 1_00_000, locked: 0 };
     this.STOCK_BALANCES[userId] = {};
     return {
       statusType: STATUS_TYPE.SUCCESS,
